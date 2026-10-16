@@ -1,7 +1,232 @@
-<!doctype html><html lang="ro"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administrare | Union Jack Events</title><style>
-:root{font-family:Arial,sans-serif;color:#29251f;background:#f8f3ea}*{box-sizing:border-box}body{margin:0}header{background:#171717;color:#d9ba7f;padding:24px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-family:Georgia,serif;font-weight:normal;font-size:clamp(23px,4vw,36px);margin:0}main{max-width:1150px;margin:35px auto;padding:0 20px}.panel{background:white;padding:25px;margin-bottom:22px;box-shadow:0 2px 18px #0000000a}label{display:block;margin:15px 0 6px}input{width:100%;max-width:480px;padding:12px;border:1px solid #cfc7b9;font:inherit}button{background:#b99559;border:0;padding:12px 18px;cursor:pointer;margin:6px 6px 6px 0;font:inherit}button.secondary{background:#e9e5df}button.reject{background:#f0c9c2}button:disabled{opacity:.4;cursor:not-allowed}.booking{border-top:1px solid #e7dfd2;padding:20px 0;line-height:1.7;overflow-wrap:anywhere}.booking:first-child{border-top:0}.pill{display:inline-block;background:#eae5db;padding:3px 10px;font-size:12px}.confirmed{background:#dcebdc}.rejected{background:#f6dcd7}.muted{color:#716a60}.filters{display:flex;gap:10px;flex-wrap:wrap}#message{margin:15px 0;color:#80571e}a{color:inherit}@media(max-width:600px){header{flex-direction:column;align-items:flex-start}.panel{padding:16px}}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.tabs button.active{background:#171717;color:#fff}.catalog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.catalog-form input,.catalog-form textarea{width:100%;max-width:none;padding:12px;border:1px solid #cfc7b9;font:inherit}.catalog-form textarea{min-height:85px}.catalog-form label{font-weight:600}.catalog-form select{width:100%;padding:12px;border:1px solid #cfc7b9}.choice-row{display:block;font-weight:normal!important;margin:8px 0}.choice-row input{width:auto}.catalog-item small{color:#716a60}.catalog-item{padding:15px;border:1px solid #e4ded4;margin:12px 0}.catalog-item p{white-space:pre-wrap}.status{font-size:13px;color:#756f65}</style></head><body><header><h1>Union Jack Events · Administrare</h1><a href="index.html">Inapoi la site</a></header><main><p id="message" role="status"></p><section class="panel" id="login"><h2>Autentificare administrator</h2><label>Email</label><input id="email" type="email" autocomplete="username"><label>Parola</label><input id="password" type="password" autocomplete="current-password"><div><button id="signIn">Autentificare</button></div></section><section id="dashboard" hidden><div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap"><h2>Solicitari si rezervari</h2><button id="signOut" class="secondary">Deconectare</button></div><p class="muted">Confirmarea ocupa data. Alte cereri pentru aceeasi zi raman in asteptare pana cand sunt procesate.</p><div class="filters"><button data-filter="pending">In asteptare</button><button data-filter="confirmed" class="secondary">Confirmate</button><button data-filter="rejected" class="secondary">Respinse</button><button data-filter="all" class="secondary">Toate</button><button id="refresh" class="secondary">Actualizeaza</button></div></div><div class="tabs"><button class="active" data-section="reservations">Rezervari</button><button data-section="catalog">Pachete si servicii</button></div><div id="reservations"><section class="panel" id="bookings">Se incarca...</section></div><div id="catalog" hidden><div class="catalog-grid"><section class="panel"><h2>Pachete</h2><form class="catalog-form" id="packageForm"><input type="hidden" id="packageId"><label>Tip eveniment *</label><select id="packageEventType" required></select><label>Nume pachet *</label><input id="packageName" maxlength="120" required><label>Descriere</label><textarea id="packageDescription" maxlength="1500"></textarea><label>Pret per invitat (RON, optional)</label><input id="packagePrice" type="number" min="0" step="0.01" placeholder="Fara pret public"><label><input id="packageActive" type="checkbox" checked style="width:auto"> Activ</label><div><button type="submit">Salveaza pachetul</button><button type="button" class="secondary" id="packageReset">Curata</button></div></form><div id="packageIncludedBox" class="panel" style="padding:12px;background:#faf6ee"><strong>Servicii incluse in pachet</strong><p class="muted">Salveaza pachetul, apoi selecteaza serviciile incluse.</p><div id="includedChoices"></div><button type="button" id="saveIncluded" class="secondary" disabled>Salveaza serviciile incluse</button></div><div id="packageList"></div></section><section class="panel"><h2>Servicii suplimentare</h2><form class="catalog-form" id="serviceForm"><input type="hidden" id="serviceId"><label>Disponibil pentru evenimente</label><div id="serviceEventChoices"></div><label>Nume serviciu *</label><input id="serviceName" maxlength="120" required><label>Descriere</label><textarea id="serviceDescription" maxlength="1500"></textarea><label>Pret (RON, optional)</label><input id="servicePrice" type="number" min="0" step="0.01" placeholder="La cerere"><label><input id="serviceActive" type="checkbox" checked style="width:auto"> Activ</label><div><button type="submit">Salveaza serviciul</button><button type="button" class="secondary" id="serviceReset">Curata</button></div></form><div id="serviceList"></div></section></div></div></section></main><script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const cfg=window.UNION_JACK_CONFIG||{},ready=!!(cfg.supabaseUrl&&cfg.supabaseAnonKey),db=ready?window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey):null,$=id=>document.getElementById(id);let filter='pending',items=[];function msg(s){$('message').textContent=s}function safe(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}if(!ready)msg('Configureaza mai intai config.js cu URL-ul si cheia publica Supabase.');async function verify(){if(!db)return;const {data:{user}}=await db.auth.getUser();if(!user){$('login').hidden=false;$('dashboard').hidden=true;return}const {data,error}=await db.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();if(error||!data){msg('Contul nu are permisiuni de administrator.');await db.auth.signOut();$('login').hidden=false;$('dashboard').hidden=true;return}$('login').hidden=true;$('dashboard').hidden=false;msg('');await load()}$('signIn').onclick=async()=>{if(!db)return;const {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(error){msg('Autentificare esuata: '+error.message);return}await verify()};$('signOut').onclick=async()=>{await db.auth.signOut();await verify()};$('refresh').onclick=()=>load();document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.className=x===b?'':'secondary');render()});async function load(){const {data,error}=await db.from('bookings').select('*').order('event_date',{ascending:true}).order('created_at',{ascending:true});if(error){msg('Nu pot incarca rezervarile: '+error.message);return}items=data||[];render()}function render(){const shown=items.filter(x=>filter==='all'||x.status===filter);$('bookings').innerHTML=shown.length?shown.map(b=>`<article class="booking"><strong>${safe(b.event_date)} · ${safe(b.client_name)}</strong> <span class="pill ${safe(b.status)}">${safe(b.status)}</span><div>${safe(b.event_type)} · ${safe((b.notes||'Pachet nespecificat'))} · ${safe(b.guest_count)} invitati</div><div>Telefon: <a href="tel:${safe(b.client_phone)}">${safe(b.client_phone)}</a></div><div>Servicii: ${'Vezi detaliile solicitarii'}</div><div>Detalii: ${safe(b.notes||'—')}</div><small class="muted">Solicitata: ${safe(new Date(b.created_at).toLocaleString('ro-RO'))}</small><div>${b.status==='pending'?`<button data-action="confirmed" data-id="${b.id}">Aproba</button><button class="reject" data-action="rejected" data-id="${b.id}">Respinge</button>`:''}${b.status==='confirmed'?`<button class="secondary" data-action="rejected" data-id="${b.id}">Anuleaza confirmarea</button>`:''}</div></article>`).join(''):'<p>Nu exista rezervari in aceasta categorie.</p>';document.querySelectorAll('[data-action]').forEach(btn=>btn.onclick=()=>change(btn.dataset.id,btn.dataset.action))}async function change(id,status){const b=items.find(x=>x.id===id);if(!b)return;if(!confirm(`${status==='confirmed'?'Aprobi':'Respingi/anulezi'} rezervarea pentru ${b.event_date}?`))return;const {error}=await db.from('bookings').update({status}).eq('id',id);if(error){msg(error.code==='23505'?'Data este deja confirmata pentru alta rezervare.':error.message);return}msg('Status actualizat. Clientul nu primeste automat notificare; contacteaza-l pentru confirmare.');await load()}
+<!DOCTYPE html>
+<html lang="ro">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Administrare | Union Jack Events
+  </title>
+  <style>
+   :root{font-family:Arial,sans-serif;color:#29251f;background:#f8f3ea}*{box-sizing:border-box}body{margin:0}header{background:#171717;color:#d9ba7f;padding:24px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-family:Georgia,serif;font-weight:normal;font-size:clamp(23px,4vw,36px);margin:0}main{max-width:1150px;margin:35px auto;padding:0 20px}.panel{background:white;padding:25px;margin-bottom:22px;box-shadow:0 2px 18px #0000000a}label{display:block;margin:15px 0 6px}input{width:100%;max-width:480px;padding:12px;border:1px solid #cfc7b9;font:inherit}button{background:#b99559;border:0;padding:12px 18px;cursor:pointer;margin:6px 6px 6px 0;font:inherit}button.secondary{background:#e9e5df}button.reject{background:#f0c9c2}button:disabled{opacity:.4;cursor:not-allowed}.booking{border-top:1px solid #e7dfd2;padding:20px 0;line-height:1.7;overflow-wrap:anywhere}.booking:first-child{border-top:0}.pill{display:inline-block;background:#eae5db;padding:3px 10px;font-size:12px}.confirmed{background:#dcebdc}.rejected{background:#f6dcd7}.muted{color:#716a60}.filters{display:flex;gap:10px;flex-wrap:wrap}#message{margin:15px 0;color:#80571e}a{color:inherit}@media(max-width:600px){header{flex-direction:column;align-items:flex-start}.panel{padding:16px}}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.tabs button.active{background:#171717;color:#fff}.catalog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.catalog-form input,.catalog-form textarea{width:100%;max-width:none;padding:12px;border:1px solid #cfc7b9;font:inherit}.catalog-form textarea{min-height:85px}.catalog-form label{font-weight:600}.catalog-form select{width:100%;padding:12px;border:1px solid #cfc7b9}.choice-row{display:block;font-weight:normal!important;margin:8px 0}.choice-row input{width:auto}.catalog-item small{color:#716a60}.catalog-item{padding:15px;border:1px solid #e4ded4;margin:12px 0}.catalog-item p{white-space:pre-wrap}.status{font-size:13px;color:#756f65}
+  </style>
+ </head>
+ <body>
+  <header>
+   <h1>
+    Union Jack Events · Administrare
+   </h1>
+   <a href="index.html">
+    Inapoi la site
+   </a>
+  </header>
+  <main>
+   <p id="message" role="status">
+   </p>
+   <section class="panel" id="login">
+    <h2>
+     Autentificare administrator
+    </h2>
+    <label>
+     Email
+    </label>
+    <input autocomplete="username" id="email" type="email"/>
+    <label>
+     Parola
+    </label>
+    <input autocomplete="current-password" id="password" type="password"/>
+    <div>
+     <button id="signIn">
+      Autentificare
+     </button>
+    </div>
+   </section>
+   <section hidden="" id="dashboard">
+    <div class="panel">
+     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <h2>
+       Solicitari si rezervari
+      </h2>
+      <button class="secondary" id="signOut">
+       Deconectare
+      </button>
+     </div>
+     <p class="muted">
+      Confirmarea ocupa data. Alte cereri pentru aceeasi zi raman in asteptare pana cand sunt procesate.
+     </p>
+     <div class="filters">
+      <button data-filter="pending">
+       In asteptare
+      </button>
+      <button class="secondary" data-filter="confirmed">
+       Confirmate
+      </button>
+      <button class="secondary" data-filter="rejected">
+       Respinse
+      </button>
+      <button class="secondary" data-filter="all">
+       Toate
+      </button>
+      <button class="secondary" id="refresh">
+       Actualizeaza
+      </button>
+     </div>
+    </div>
+    <div class="tabs">
+     <button class="active" data-section="reservations">
+      Rezervari
+     </button>
+     <button data-section="catalog">
+      Pachete si servicii
+     </button>
+    </div>
+    <div id="reservations">
+     <section class="panel" id="bookings">
+      Se incarca...
+     </section>
+    </div>
+    <div hidden="" id="catalog">
+     <div class="catalog-grid">
+      <section class="panel">
+       <h2>
+        Pachete
+       </h2>
+       <form class="catalog-form" id="packageForm">
+        <input id="packageId" type="hidden"/>
+        <label>
+         Tip eveniment *
+        </label>
+        <select id="packageEventType" required="">
+        </select>
+        <label>
+         Nume pachet *
+        </label>
+        <input id="packageName" maxlength="120" required=""/>
+        <label>
+         Descriere
+        </label>
+        <textarea id="packageDescription" maxlength="1500"></textarea>
+        <label>
+         Pret per invitat (RON, optional)
+        </label>
+        <input id="packagePrice" min="0" placeholder="Fara pret public" step="0.01" type="number"/>
+        <label>
+         <input checked="" id="packageActive" style="width:auto" type="checkbox"/>
+         Activ
+        </label>
+        <div>
+         <button type="submit">
+          Salveaza pachetul
+         </button>
+         <button class="secondary" id="packageReset" type="button">
+          Curata
+         </button>
+        </div>
+       </form>
+       <div class="panel" id="packageIncludedBox" style="padding:12px;background:#faf6ee">
+        <strong>
+         Servicii incluse in pachet
+        </strong>
+        <p class="muted">
+         Salveaza pachetul, apoi selecteaza serviciile incluse.
+        </p>
+        <div id="includedChoices">
+        </div>
+        <button class="secondary" disabled="" id="saveIncluded" type="button">
+         Salveaza serviciile incluse
+        </button>
+       </div>
+       <div id="packageList">
+       </div>
+      </section>
+      <section class="panel">
+       <h2>
+        Servicii suplimentare
+       </h2>
+       <form class="catalog-form" id="serviceForm">
+        <input id="serviceId" type="hidden"/>
+        <label>
+         Disponibil pentru evenimente
+        </label>
+        <div id="serviceEventChoices">
+        </div>
+        <label>
+         Nume serviciu *
+        </label>
+        <input id="serviceName" maxlength="120" required=""/>
+        <label>
+         Descriere
+        </label>
+        <textarea id="serviceDescription" maxlength="1500"></textarea>
+        <label>
+         Pret (RON, optional)
+        </label>
+        <input id="servicePrice" min="0" placeholder="La cerere" step="0.01" type="number"/>
+        <label>
+         <input checked="" id="serviceActive" style="width:auto" type="checkbox"/>
+         Activ
+        </label>
+        <div>
+         <button type="submit">
+          Salveaza serviciul
+         </button>
+         <button class="secondary" id="serviceReset" type="button">
+          Curata
+         </button>
+        </div>
+       </form>
+       <div id="serviceList">
+       </div>
+      </section>
+     </div>
+    </div>
+   </section>
+  </main>
+  <script src="config.js">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  </script>
+  <script>
+   const cfg=window.UNION_JACK_CONFIG||{},ready=!!(cfg.supabaseUrl&&cfg.supabaseAnonKey),db=ready?window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey):null,$=id=>document.getElementById(id);let filter='pending',items=[];function msg(s){$('message').textContent=s}function safe(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}if(!ready)msg('Configureaza mai intai config.js cu URL-ul si cheia publica Supabase.');async function verify(){if(!db)return;const {data:{user}}=await db.auth.getUser();if(!user){$('login').hidden=false;$('dashboard').hidden=true;return}const {data,error}=await db.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();if(error||!data){msg('Contul nu are permisiuni de administrator.');await db.auth.signOut();$('login').hidden=false;$('dashboard').hidden=true;return}$('login').hidden=true;$('dashboard').hidden=false;msg('');await load()}$('signIn').onclick=async()=>{if(!db)return;const {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(error){msg('Autentificare esuata: '+error.message);return}await verify()};$('signOut').onclick=async()=>{await db.auth.signOut();await verify()};$('refresh').onclick=()=>load();document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.className=x===b?'':'secondary');render()});async function load(){const {data,error}=await db.from('bookings').select('*').order('event_date',{ascending:true}).order('created_at',{ascending:true});if(error){msg('Nu pot incarca rezervarile: '+error.message);return}items=data||[];render()}function render(){const shown=items.filter(x=>filter==='all'||x.status===filter);$('bookings').innerHTML=shown.length?shown.map(b=>`<article class="booking"><strong>${safe(b.event_date)} · ${safe(b.client_name)}</strong> <span class="pill ${safe(b.status)}">${safe(b.status)}</span><div>${safe(b.event_type)} · ${safe((b.notes||'Pachet nespecificat'))} · ${safe(b.guest_count)} invitati</div><div>Telefon: <a href="tel:${safe(b.client_phone)}">${safe(b.client_phone)}</a></div><div>Servicii: ${'Vezi detaliile solicitarii'}</div><div>Detalii: ${safe(b.notes||'—')}</div><small class="muted">Solicitata: ${safe(new Date(b.created_at).toLocaleString('ro-RO'))}</small><div>${b.status==='pending'?`<button data-action="confirmed" data-id="${b.id}">Aproba</button><button class="reject" data-action="rejected" data-id="${b.id}">Respinge</button>`:''}${b.status==='confirmed'?`<button class="secondary" data-action="rejected" data-id="${b.id}">Anuleaza confirmarea</button>`:''}</div></article>`).join(''):'<p>Nu exista rezervari in aceasta categorie.</p>';document.querySelectorAll('[data-action]').forEach(btn=>btn.onclick=()=>change(btn.dataset.id,btn.dataset.action))}// Actualizeaza statusul si trimite notificarea prin Edge Function.
+async function change(id, status) {
+  const booking = items.find(item => item.id === id);
+  if (!booking) return;
+
+  const actionText = status === 'confirmed' ? 'Aprobi' : 'Respingi/anulezi';
+  if (!confirm(`${actionText} rezervarea pentru ${booking.event_date}?`)) return;
+
+  // Actualizam mai intai statusul rezervarii.
+  const { error: updateError } = await db
+    .from('bookings')
+    .update({ status })
+    .eq('id', id);
+
+  if (updateError) {
+    msg(updateError.code === '23505'
+      ? 'Data este deja confirmata pentru alta rezervare.'
+      : updateError.message);
+    return;
+  }
+
+  // Solicitam emailul numai dupa salvarea cu succes a statusului.
+  msg('Status actualizat. Se incearca trimiterea emailului...');
+  try {
+    const { data, error } = await db.functions.invoke('send-booking-email', {
+      body: { bookingId: id }
+    });
+
+    if (error) {
+      msg('Status actualizat, dar emailul nu a putut fi confirmat. Verifica Logs in Supabase. ' + error.message);
+    } else {
+      msg('Status actualizat. ' + (data?.message || 'Functia email a raspuns.'));
+    }
+  } catch (error) {
+    msg('Status actualizat, dar trimiterea emailului nu a putut fi verificata: ' + error.message);
+  }
+
+  await load();
+}
+
 let catalogData={packages:[],services:[]},eventTypes=[],includedLinks=[],availableLinks=[];
 document.querySelectorAll('[data-section]').forEach(btn=>btn.addEventListener('click',async()=>{const section=btn.dataset.section;document.querySelectorAll('[data-section]').forEach(x=>x.classList.toggle('active',x===btn));$('reservations').hidden=section!=='reservations';$('catalog').hidden=section!=='catalog';if(section==='catalog')await loadCatalog()}));
 function resetCatalog(kind){const prefix=kind==='packages'?'package':'service';$(prefix+'Form').reset();$(prefix+'Id').value='';$(prefix+'Active').checked=true}
@@ -47,4 +272,6 @@ for(const kind of ['packages','services']){
  }
 }
 verify();
-</script></body></html>
+  </script>
+ </body>
+</html>
