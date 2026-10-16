@@ -1,0 +1,13 @@
+UNION JACK EVENTS - GHID RAPID
+
+index.html   = structura paginii si textele vizibile
+styles.css   = culori, spatii, aspect, adaptare la telefon
+script.js    = formularul, calculul pretului si conectarea cu Supabase
+config.js    = adresa si cheia publica Supabase
+admin.html   = panoul de administrare (pastrat din arhiva initiala)
+images/      = fotografiile site-ului
+
+Pornire: deschide index.html cu Live Server in VS Code.
+Nu rula fisierele SQL pentru simpla modificare a designului.
+
+IMPORTANT: Aceasta este o reorganizare a codului existent, nu o reparatie verificata a fluxului de rezervari.

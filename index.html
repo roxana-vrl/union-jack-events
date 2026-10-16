@@ -1,0 +1,316 @@
+<!-- Pagina publica Union Jack Events. Stilurile sunt in styles.css, iar logica in script.js. -->
+<!DOCTYPE html>
+<html lang="ro">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Union Jack Events | Galati
+  </title>
+  <link href="styles.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <nav class="nav">
+   <div class="brand">
+    UNION JACK
+    <span style="color:#b99459;font-style:italic">
+     Events
+    </span>
+   </div>
+   <div class="navlinks">
+    <a href="#acasa">
+     Acasa
+    </a>
+    <a href="#locatie">
+     Locatia
+    </a>
+    <a href="#pachete">
+     Pachete
+    </a>
+    <a href="#rezervare">
+     Rezervari
+    </a>
+    <a href="#contact">
+     Contact
+    </a>
+   </div>
+  </nav>
+  <header class="hero" id="acasa">
+   <div>
+    <span class="eyebrow">
+     Galati · Evenimente memorabile
+    </span>
+    <h1>
+     Momente unice.
+     <br/>
+     Eleganta fara compromis.
+    </h1>
+    <p>
+     Un cadru spectaculos pentru nunta ta, ceremonia civila si evenimentele care merita sarbatorite.
+    </p>
+    <a class="btn" href="#rezervare">
+     Planifica evenimentul
+    </a>
+    <a class="btn outline" href="#locatie">
+     Descopera locatia
+    </a>
+   </div>
+  </header>
+  <section class="section" id="locatie">
+   <div class="center">
+    <span class="eyebrow">
+     Descopera Union Jack Events
+    </span>
+    <h2>
+     Un decor care spune o poveste
+    </h2>
+    <p class="intro">
+     O sala luminoasa, candelabre spectaculoase, decoruri florale si o gradina pregatita pentru ceremonii in aer liber.
+    </p>
+   </div>
+   <div class="gallery">
+    <img alt="Sala de evenimente" src="images/IMG_3856.jpeg"/>
+    <img alt="Aranjament floral" src="images/IMG_3857.jpeg"/>
+    <img alt="Ceremonie in gradina" src="images/IMG_3852.jpeg"/>
+    <img alt="Masa decorata" src="images/IMG_3851.jpeg"/>
+    <img alt="Decor de ceremonie" src="images/IMG_3850.jpeg"/>
+   </div>
+  </section>
+  <div class="dark">
+   <section class="section" id="pachete">
+    <div class="center">
+     <span class="eyebrow">
+      Servicii personalizate
+     </span>
+     <h2>
+      Alege experienta potrivita
+     </h2>
+     <p class="intro" style="color:#bdb6a9">
+      Pachetele sunt orientative. Serviciile finale si tarifele se confirma prin oferta personalizata.
+     </p>
+    </div>
+    <div class="cards">
+     <article class="card">
+      <img alt="Nunta" src="images/IMG_3855.jpeg"/>
+      <div class="card-body">
+       <h3>
+        Nunta eleganta
+       </h3>
+       <p>
+        Organizare si decor adaptate stilului vostru, de la ceremonie la petrecere.
+       </p>
+       <a class="btn" href="#rezervare" onclick="setPackage('Nunta eleganta')">
+        Personalizeaza
+       </a>
+      </div>
+     </article>
+     <article class="card">
+      <img alt="Sala premium" src="images/IMG_3854.jpeg"/>
+      <div class="card-body">
+       <h3>
+        All Inclusive 2027
+       </h3>
+       <p>
+        Oferta promovata: stare civila la foisor, tort de shot-uri, candy bar, prosecco bar, decor sala, camera mirilor si event planner.
+       </p>
+       <a class="btn" href="#rezervare" onclick="setPackage('All Inclusive 2027')">
+        Personalizeaza
+       </a>
+      </div>
+     </article>
+     <article class="card">
+      <img alt="Cuplu" src="images/IMG_3853.jpeg"/>
+      <div class="card-body">
+       <h3>
+        Eveniment privat
+       </h3>
+       <p>
+        Configurare flexibila pentru aniversari, petreceri si alte ocazii speciale, in functie de disponibilitate.
+       </p>
+       <a class="btn" href="#rezervare" onclick="setPackage('Eveniment privat')">
+        Personalizeaza
+       </a>
+      </div>
+     </article>
+    </div>
+   </section>
+  </div>
+  <section class="section" id="rezervare">
+   <div class="center">
+    <span class="eyebrow">
+     Configureaza evenimentul
+    </span>
+    <h2>
+     Cerere de rezervare
+    </h2>
+    <p class="intro">
+     Selecteaza data, personalizeaza serviciile si trimite o cerere pentru aprobarea administratorului. O cerere trimisa nu inseamna rezervare confirmata.
+    </p>
+   </div>
+   <div class="planner">
+    <div class="panel">
+     <h3>
+      1. Detaliile evenimentului
+     </h3>
+     <label for="kind">
+      Tipul evenimentului
+     </label>
+     <select id="kind">
+      <option>
+       Nunta
+      </option>
+      <option>
+       Botez
+      </option>
+      <option>
+       Aniversare
+      </option>
+      <option>
+       Eveniment corporate
+      </option>
+      <option>
+       Alt eveniment
+      </option>
+     </select>
+     <label for="pkg">
+      Pachet
+     </label>
+     <select id="pkg">
+      <option>
+       Nunta eleganta
+      </option>
+      <option>
+       All Inclusive 2027
+      </option>
+      <option>
+       Eveniment privat
+      </option>
+     </select>
+     <label for="date">
+      Data dorita
+     </label>
+     <input id="date" type="date"/>
+     <div class="status" id="availability">
+      Selecteaza o data pentru a solicita verificarea disponibilitatii.
+     </div>
+     <label for="guests">
+      Numar estimat de invitati
+     </label>
+     <input id="guests" max="2000" min="1" type="number" value="100"/>
+     <label for="name">
+      Nume si prenume
+     </label>
+     <input autocomplete="name" id="name" placeholder="Numele tau"/>
+     <label for="email">
+      Email
+     </label>
+     <input autocomplete="email" id="email" placeholder="nume@exemplu.ro" type="email"/>
+     <label for="phone">
+      Telefon
+     </label>
+     <input autocomplete="tel" id="phone" placeholder="07..." type="tel"/>
+     <label for="notes">
+      Alte detalii
+     </label>
+     <textarea id="notes" placeholder="Preferinte, cerinte speciale..." rows="3"></textarea>
+    </div>
+    <div class="panel">
+     <h3>
+      2. Personalizeaza pachetul
+     </h3>
+     <p>
+      Servicii incluse si optiuni suplimentare:
+     </p>
+     <div class="checks" id="services">
+      <label>
+       <input type="checkbox" value="Stare civila la foisor"/>
+       Stare civila la foisor
+      </label>
+      <label>
+       <input type="checkbox" value="Tort de shot-uri"/>
+       Tort de shot-uri
+      </label>
+      <label>
+       <input type="checkbox" value="Candy bar"/>
+       Candy bar
+      </label>
+      <label>
+       <input type="checkbox" value="Prosecco bar"/>
+       Prosecco bar
+      </label>
+      <label>
+       <input type="checkbox" value="Decor sala"/>
+       Decor sala
+      </label>
+      <label>
+       <input type="checkbox" value="Camera mirilor"/>
+       Camera mirilor
+      </label>
+      <label>
+       <input type="checkbox" value="Event planner"/>
+       Event planner
+      </label>
+      <label>
+       <input type="checkbox" value="Decor floral personalizat"/>
+       Decor floral personalizat
+      </label>
+     </div>
+     <div class="summary">
+      <strong>
+       Rezumatul solicitarii
+      </strong>
+      <div id="summary">
+      </div>
+      <strong id="priceEstimate">
+       Pret estimativ: la cerere
+      </strong>
+     </div>
+     <button class="btn" id="send" style="width:100%">
+      Trimite cererea de rezervare
+     </button>
+     <p class="mobile-note">
+      Cererea nu reprezinta o rezervare confirmata. Administratorul verifica si aproba solicitarea. Vei fi contactat la numarul furnizat. Datele se salveaza in Supabase numai dupa configurarea serviciului.
+     </p>
+    </div>
+   </div>
+  </section>
+  <section class="section contact" id="contact">
+   <div>
+    <span class="eyebrow">
+     Hai sa discutam
+    </span>
+    <h2>
+     Incepe povestea evenimentului tau
+    </h2>
+    <p>
+     <strong>
+      Union Jack Events
+     </strong>
+     <br/>
+     Calea Prutului, nr. 56, Galati
+     <br/>
+     Telefon:
+     <a href="tel:+40742840537">
+      0742 840 537
+     </a>
+    </p>
+    <a class="btn" href="https://wa.me/40742840537" rel="noopener" target="_blank">
+     Contact WhatsApp
+    </a>
+   </div>
+   <img alt="Ceremonie in gradina" src="images/IMG_3850.jpeg"/>
+  </section>
+  <footer>
+   ©
+   <span id="year">
+   </span>
+   Union Jack Events · Galati · Site demonstrativ
+  </footer>
+  <script src="config.js">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  </script>
+  <script src="script.js">
+  </script>
+ </body>
+</html>
